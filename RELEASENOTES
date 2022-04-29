@@ -1,0 +1,7 @@
+What's new in MNKGame v2.0
+
+- fixed a bug in the isWinningCell() method in MNKBoard
+- the initPlayer() method in the MNKPlayer interface includes now a "timout" parameter
+- MNKGame can be run in Computer vs Computer mode
+- board squares in MNKGame are resized according to monitor dimensions
+- Added MNKPlayerTester to run in non-graphic mode a match between two MNKPlayers

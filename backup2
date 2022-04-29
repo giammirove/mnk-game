@@ -1,0 +1,330 @@
+private boolean isWinningCell(int i, int j, MNKCellState player) {
+        MNKCellState s = player;
+        int n;
+        if (s == mioStato) {
+            secure_win_mia = false;
+            almost_secure_win_mia = 0;
+        } else {
+            secure_win_nemica = false;
+            almost_secure_win_nemica = 0;
+        }
+
+        Boolean se = false;
+        int al = 0;
+        int k = 0;
+        int b = 0;
+        int f = 0;
+
+        try {
+            // Useless pedantic check
+            if (s == MNKCellState.FREE)
+                return false;
+
+            // Horizontal check
+            n = 1;
+            b = 1;
+            f = 1;
+            for (k = 1; j - k >= 0 && B[i][j - k] == s; k++)
+                n++; // backward check
+            b = k;
+            for (k = 1; j + k < N && B[i][j + k] == s; k++)
+                n++; // forward check
+            f = k;
+            if (n >= 2) {
+                se = ((j - b >= 0 && B[i][j - b] == freeStato) && (j + f < N && B[i][j + f] == freeStato));
+                if (n == K - 1 /* && B[i][j] == player */) {
+
+                    if (se) {
+                        if (player == mioStato) {
+                            secure_win_mia = true;
+                        } else {
+                            secure_win_nemica = true;
+                        }
+                    }
+                }
+                se = ((j - b >= 0 && B[i][j - b] == freeStato) || (j + f < N && B[i][j + f] == freeStato));
+                if (n == K - 2 && se/* && B[i][j] == player */) {
+
+                    // __x_ -> _xx_
+                    if (j - 1 >= 0 && j + (K - 2) < N) {
+                        if (B[i][j - 1] == freeStato && B[i][j + (K - 2)] == freeStato
+                                && ((j - 2 >= 0 && B[i][j - 2] == freeStato)
+                                        || j + (K - 1) < N && B[i][j + (K - 1)] == freeStato)) {
+                            al++;
+                        }
+                    }
+                    // _x__ -> _xx_
+                    if (j + 1 < N && j - (K - 2) >= 0) {
+                        if (B[i][j + 1] == freeStato && B[i][j - (K - 2)] == freeStato
+                                && ((j + 2 < N && B[i][j + 2] == freeStato)
+                                        || j - (K - 1) >= 0 && B[i][j - (K - 1)] == freeStato)) {
+                            al++;
+                        }
+                    }
+
+                    if (player == mioStato) {
+                        almost_secure_win_mia = al;
+                    } else {
+                        almost_secure_win_nemica = al;
+                    }
+                }
+                if (se) {
+                    if (player == mioStato) {
+                        // controlla le estremità della fila creata, se almeno uno è libero ho la
+                        // possibilità di vincere
+                        // altrimenti anche la mossa che porta a K-1 è inutile
+                        for (k = K - 1; k > 1; k--) {
+                            if (n >= k) {
+                                win_table_mia[k]++;
+                                break;
+                            }
+                        }
+                    } else {
+                        for (k = K - 1; k > 1; k--) {
+                            if (n >= k) {
+                                win_table_nemica[k]++;
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (n >= K)
+                    return true;
+            }
+
+            // Vertical check
+            n = 1;
+            b = 1;
+            f = 1;
+            for (k = 1; i - k >= 0 && B[i - k][j] == s; k++)
+                n++; // backward check
+            b = k;
+            for (k = 1; i + k < M && B[i + k][j] == s; k++)
+                n++; // forward check
+            f = k;
+            if (n >= 2) {
+                se = ((i - b >= 0 && B[i - b][j] == freeStato) && (i + f < M && B[i + f][j] == freeStato));
+                if (n == K - 1 /* && B[i][j] == player */) {
+
+                    if (se) {
+                        if (s == mioStato) {
+                            secure_win_mia = true;
+                        } else {
+                            secure_win_nemica = true;
+                        }
+                    }
+                }
+                se = ((i - b >= 0 && B[i - b][j] == freeStato) || (i + f < M && B[i + f][j] == freeStato));
+                if (n == K - 2 && se/* && B[i][j] == player */) {
+
+                    /*
+                     * _ _ _ x x -> x _ _
+                     */
+                    if (i - 1 >= 0 && i + (K - 2) < M) {
+                        if (B[i - 1][j] == freeStato && B[i + (K - 2)][j] == freeStato
+                                && ((i - 2 >= 0 && B[i - 2][j] == freeStato)
+                                        || i + (K - 1) < M && B[i + (K - 1)][j] == freeStato)) {
+                            al++;
+                        }
+                    }
+
+                    /*
+                     * _ _ x x _ -> x _ _
+                     */
+                    if (i + 1 < M && i - (K - 2) >= 0) {
+                        if (B[i + 1][j] == freeStato && B[i - (K - 2)][j] == freeStato
+                                && ((i + 2 < M && B[i + 2][j] == freeStato)
+                                        || i - (K - 1) >= 0 && B[i - (K - 1)][j] == freeStato)) {
+                            al++;
+                        }
+                    }
+
+                    if (player == mioStato) {
+                        almost_secure_win_mia = al;
+                    } else {
+                        almost_secure_win_nemica = al;
+                    }
+                }
+                if (se) {
+                    if (player == mioStato) {
+                        // controlla le estremità della fila creata, se almeno uno è libero ho la
+                        // possibilità di vincere
+                        // altrimenti anche la mossa che porta a K-1 è inutile
+                        for (k = K - 1; k > 1; k--) {
+                            if (n >= k) {
+                                win_table_mia[k]++;
+                                break;
+                            }
+                        }
+                    } else {
+                        for (k = K - 1; k > 1; k--) {
+                            if (n >= k) {
+                                win_table_nemica[k]++;
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (n >= K)
+                    return true;
+            }
+
+            // Diagonal check
+            n = 1;
+            b = 1;
+            f = 1;
+            for (k = 1; i - k >= 0 && j - k >= 0 && B[i - k][j - k] == s; k++)
+                n++; // backward check
+            b = k;
+            for (k = 1; i + k < M && j + k < N && B[i + k][j + k] == s; k++)
+                n++; // forward check
+            f = k;
+            if (n >= 2) {
+                se = ((i - b >= 0 && j - b >= 0 && B[i - b][j - b] == freeStato)
+                        && (i + f < M && j + f < N && B[i + f][j + f] == freeStato));
+                if (n == K - 1 /* && B[i][j] == player */) {
+
+                    if (se) {
+                        if (player == mioStato) {
+                            secure_win_mia = true;
+                        } else {
+                            secure_win_nemica = true;
+                        }
+                    }
+                }
+                se = ((i - b >= 0 && j - b >= 0 && B[i - b][j - b] == freeStato)
+                        || (i + f < M && j + f < N && B[i + f][j + f] == freeStato));
+                if (n == K - 2 && se/* && B[i][j] == player */) {
+
+                    /*
+                     * _ _ _ x x -> x _ _
+                     */
+                    if (i - 1 >= 0 && j - 1 >= 0 && i + (K - 2) < M && j + (K - 2) < N && B[i - 1][j - 1] == freeStato
+                            && B[i + (K - 2)][j + (K - 2)] == freeStato
+                            && ((i - 2 >= 0 && j - 2 >= 0 && B[i - 2][j - 2] == freeStato) || i + (K - 1) < M
+                                    && j + (K - 1) < N && B[i + (K - 1)][j + (K - 1)] == freeStato)) {
+                        al++;
+                    }
+
+                    /*
+                     * _ _ x x _ -> x _ _
+                     */
+                    if (i + 1 < M && j + 1 < N && i - (K - 2) >= 0 && j - (K - 2) >= 0 && B[i + 1][j + 1] == freeStato
+                            && B[i - (K - 2)][j - (K - 2)] == freeStato
+                            && ((i + 2 < M && j + 2 < N && B[i + 2][j + 2] == freeStato) || i - (K - 1) >= 0
+                                    && j - (K - 1) >= 0 && B[i - (K - 1)][j - (K - 1)] == freeStato)) {
+                        al++;
+                    }
+
+                    if (player == mioStato) {
+                        almost_secure_win_mia = al;
+                    } else {
+                        almost_secure_win_nemica = al;
+                    }
+                }
+                if (se) {
+                    if (player == mioStato) {
+                        // controlla le estremità della fila creata, se almeno uno è libero ho la
+                        // possibilità di vincere
+                        // altrimenti anche la mossa che porta a K-1 è inutile
+                        for (k = K - 1; k > 1; k--) {
+                            if (n >= k) {
+                                win_table_mia[k]++;
+                                break;
+                            }
+                        }
+                    } else {
+                        for (k = K - 1; k > 1; k--) {
+                            if (n >= k) {
+                                win_table_nemica[k]++;
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (n >= K)
+                    return true;
+            }
+
+            // Anti-diagonal check
+            n = 1;
+            b = 1;
+            f = 1;
+            for (k = 1; i - k >= 0 && j + k < N && B[i - k][j + k] == s; k++)
+                n++; // backward check
+            b = k;
+            for (k = 1; i + k < M && j - k >= 0 && B[i + k][j - k] == s; k++)
+                n++;
+            f = k;
+            if (n >= 2) {
+                se = ((i - b >= 0 && j + b < N && B[i - b][j + b] == freeStato)
+                        && (i + f < M && j - f >= 0 && B[i + f][j - f] == freeStato));
+                if (n == K - 1 /* && B[i][j] == player */) {
+
+                    if (se) {
+                        if (player == mioStato) {
+                            secure_win_mia = true;
+                        } else {
+                            secure_win_nemica = true;
+                        }
+                    }
+                }
+
+                se = ((i - b >= 0 && j + b < N && B[i - b][j + b] == freeStato)
+                        || (i + f < M && j - f >= 0 && B[i + f][j - f] == freeStato));
+                if (n == K - 2 && se/* && B[i][j] == player */) {
+                    /*
+                     * _ _ _ x x -> x _ _
+                     */
+                    if (i - 1 >= 0 && j + 1 < N && i + (K - 2) < M && j - (K - 2) >= 0 && B[i - 1][j + 1] == freeStato
+                            && B[i + (K - 2)][j - (K - 2)] == freeStato
+                            && ((i - 2 >= 0 && j + 2 < N && B[i - 2][j + 2] == freeStato) || i + (K - 1) < M
+                                    && j - (K - 1) >= 0 && B[i + (K - 1)][j - (K - 1)] == freeStato)) {
+                        al++;
+                    }
+                    if (i + 1 < M && j - 1 >= 0 && i - (K - 2) >= 0 && j + (K - 2) < N && B[i + 1][j - 1] == freeStato
+                            && B[i - (K - 2)][j + (K - 2)] == freeStato
+                            && ((i + 2 < M && j - 2 >= 0 && B[i + 2][j - 2] == freeStato) || i - (K - 1) >= 0
+                                    && j + (K - 1) < N && B[i - (K - 1)][j + (K - 1)] == freeStato)) {
+                        al++;
+                    }
+
+                    if (player == mioStato) {
+                        almost_secure_win_mia = al;
+                    } else {
+                        almost_secure_win_nemica = al;
+                    }
+                }
+                if (se) {
+                    if (player == mioStato) {
+                        // controlla le estremità della fila creata, se almeno uno è libero ho la
+                        // possibilità di vincere
+                        // altrimenti anche la mossa che porta a K-1 è inutile
+                        for (k = K - 1; k > 1; k--) {
+                            if (n >= k) {
+                                win_table_mia[k]++;
+                                break;
+                            }
+                        }
+                    } else {
+                        for (k = K - 1; k > 1; k--) {
+                            if (n >= k) {
+                                win_table_nemica[k]++;
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (n >= K)
+                    return true;
+            }
+
+        } catch (Exception e) {
+            System.out.println("Errore in isWinning (" + i + "," + j + ") : " + e.toString());
+        }
+
+        win_table_mia[K] = 0;
+        win_table_nemica[K] = 0;
+
+        return false;
+    }
